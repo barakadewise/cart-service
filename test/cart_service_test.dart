@@ -7,15 +7,15 @@ void main() {
   //test sample
   List<dynamic> apiSampleData = [
     {
-      "product": {"id": "1", "name": "Smartphone", "price": 3000.0},
+      "product": {"id": 1, "name": "Smartphone", "price": 3000.0},
       "quantity": 40
     },
     {
-      "product": {"id": "2", "name": "Laptop", "price": 10000.0},
+      "product": {"id": 2, "name": "Laptop", "price": 10000.0},
       "quantity": 100
     },
     {
-      "product": {"id": "3", "name": "Smartwatch", "price": 5000.0},
+      "product": {"id": 3, "name": "Smartwatch", "price": 5000.0},
       "quantity": 1
     }
   ];

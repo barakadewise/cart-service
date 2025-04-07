@@ -109,10 +109,6 @@ class CartService<T> {
     List<CartModel<T>> list = [];
     try {
       for (var i in data) {
-        // if (i is! Map) {
-        //   print("Error innvalid type object ${i.runtimeType}");
-        //   break;
-        // }
         list.add(CartModel.fromJson(i, fromJson));
       }
       return list;
