@@ -106,13 +106,15 @@ class ApplicationBaseRequest {
         final Map<String, String?> params = data != null
             ? data!.map((key, value) => MapEntry(key, value?.toString()))
             : {};
-        final Uri requestUrl = getUri(baseUrl, endpoint, params);
 
-        print("GET Request URL: $requestUrl");
+        print("method $method");
+        final Uri requestUrl = getUri(baseUrl, endpoint, params);
+        print("GET Request URL: $requestUrl ");
 
         response = await http
             .get(requestUrl, headers: _getHeaders())
             .timeout(const Duration(seconds: 60));
+        print("Complleted request:");
       }
 
       if (method.toLowerCase() == "delete") {
@@ -236,7 +238,10 @@ class ApplicationBaseRequest {
 //return the headers
   Map<String, String> _getHeaders() {
     Map<String, String> headers = CartNetworkConfig.config!['headers'];
-    headers['Authorization'] = 'Bearer $token';
+    if (token != "") {
+      headers['Authorization'] = 'Bearer $token';
+    }
+    print("Headers:$headers");
     return headers;
   }
 }

@@ -1,21 +1,25 @@
 import 'package:cart_service/cart_service.dart';
+import 'package:cart_service/config/network_config.dart';
+import 'package:cart_service/enums/request_enum.dart';
 import 'package:cart_service/models/cart/cart_item.dart';
 import 'package:cart_service/models/product/product.dart';
 
 void main() {
   final cartService = CartService<Product>();
+  final cartService2 = CartService<ProductModel>();
+
   //test sample
   List<dynamic> apiSampleData = [
     {
-      "product": {"id": 1, "name": "Smartphone", "price": 3000.0},
+      "product": {"id": '1', "name": "Smartphone", "price": 3000.0},
       "quantity": 40
     },
     {
-      "product": {"id": 2, "name": "Laptop", "price": 10000.0},
+      "product": {"id": '2', "name": "Laptop", "price": 10000.0},
       "quantity": 100
     },
     {
-      "product": {"id": 3, "name": "Smartwatch", "price": 5000.0},
+      "product": {"id": '3', "name": "Smartwatch", "price": 5000.0},
       "quantity": 1
     }
   ];
@@ -50,32 +54,32 @@ void main() {
     print('🛍 ${item.product.name} - Quantity: ${item.quantity}');
   }
 
-  // Remove an item
-  print('\n❌ Removing Smartphone...');
-  cartService.removeItem(smartphone);
-  print('✔️ ${smartphone.name} removed.');
+  // // Remove an item
+  // print('\n❌ Removing Smartphone...');
+  // cartService.removeItem(smartphone);
+  // print('✔️ ${smartphone.name} removed.');
 
   // Print cart items after removal
-  print('\n🛒 Cart Items after removal:');
-  for (var item in cartService.getItems()) {
-    print('🛍 ${item.product.name} - Quantity: ${item.quantity}');
-  }
+  // print('\n🛒 Cart Items after removal:');
+  // for (var item in cartService.getItems()) {
+  //   print('🛍 ${item.product.name} - Quantity: ${item.quantity}');
+  // }
 
   // Increment and decrement product quantities
-  print('\n🔼 Incrementing and Decrementing Product Quantities...');
-  for (int i = 1; i <= 10; i++) {
-    // Valid increments and decrements
-    cartService.addItem(CartModel(product: teabag));
-    print('✔️ added to cart  ${teabag.name}.');
-    cartService.decrementProduct(laptop);
-    print('✔️ Decremented quantity of ${laptop.name}.');
-  }
+  // print('\n🔼 Incrementing and Decrementing Product Quantities...');
+  // for (int i = 1; i <= 10; i++) {
+  //   // Valid increments and decrements
+  //   cartService.addItem(CartModel(product: teabag));
+  //   print('✔️ added to cart  ${teabag.name}.');
+  //   cartService.decrementProduct(laptop);
+  //   print('✔️ Decremented quantity of ${laptop.name}.');
+  // }
 
   // Print cart items after removal
-  print('\n🛒 After incrememntation:');
-  for (var item in cartService.getItems()) {
-    print('🛍 ${item.product.name} - Quantity: ${item.quantity}');
-  }
+  // print('\n🛒 After incrememntation:');
+  // for (var item in cartService.getItems()) {
+  //   print('🛍 ${item.product.name} - Quantity: ${item.quantity}');
+  // }
 
   cartService.addMultipleItems([
     const CartModel(product: teabag, quantity: 30),
@@ -83,11 +87,17 @@ void main() {
     const CartModel(product: deskChair)
   ]);
 
-  print(
-      "ASSOCIATED USER CARTS ARE:${cartService.userOrder(apiSampleData, (json) => Product.fromJson(json))}");
-  print(
-      "ALL PRODUCTS CART HERE :${cartService.printCartItemsAsJson((product) => product.toJson())}");
-
+  // print(
+  //     "ASSOCIATED USER CARTS ARE:${cartService.userOrder(apiSampleData, (json) => Product.fromJson(json))}");
+  // print(
+  //     "ALL PRODUCTS CART HERE :${cartService.printCartItemsAsJson((product) => product.toJson())}");
+  // cartService.serverRequest(
+  //     method: RequestEnum.post,
+  //     params: {"product": teabag},
+  //     token: "wsiensjdywyeydjahywtrge6374w,dharf7.sorjYYWENngvZLDSFUBXZL",
+  //     endPoint: "");
+  print("Starting to fetsch data .....");
+  
   // Stop the stopwatch and print the execution time
   stopwatch.stop();
   print('\n⏱ Program executed in ${stopwatch.elapsedMilliseconds}ms');

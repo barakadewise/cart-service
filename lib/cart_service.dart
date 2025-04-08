@@ -1,4 +1,7 @@
+import 'package:cart_service/config/network_config.dart';
+import 'package:cart_service/enums/request_enum.dart';
 import 'package:cart_service/models/cart/cart_item.dart';
+import 'package:cart_service/repository/cart_repository.dart';
 
 class CartService<T> {
   /// List to hold cart items
@@ -115,6 +118,60 @@ class CartService<T> {
     } catch (e, stack) {
       print("Errror occured while adding data to cart:$stack");
       rethrow;
+    }
+  }
+
+  /// send cart order to server
+  /// http method is default post if no  method selected from [RequestEnum]
+  /// params are null by default  and token are null by default
+  Future<dynamic> serverRequest({
+    RequestEnum method = RequestEnum.post,
+    Map<String, dynamic>? params,
+    String? token,
+    required T Function(Map<String, dynamic>) fromJson,
+    required String endPoint,
+  }) async {
+    try {
+      switch (method) {
+        case RequestEnum.get:
+          print(
+              "📥 Sending GET request for endpoint: $endPoint with params: $params");
+          final result = await CartRepository<T>().productItems(
+            endPoint: endPoint,
+            token: token,
+            params: params,
+            fromJson: fromJson,
+          );
+          return result.fold(
+            (error) {
+              print("❌ Error occurred: ${error.message}");
+              return error;
+            },
+            (data) {
+              print("✅ Fetched data: $data");
+              return data;
+            },
+          );
+
+        case RequestEnum.post:
+          print("📤 Sending POST request with params: $params");
+          // TODO: Implement POST logic
+          return null;
+
+        case RequestEnum.delete:
+          print("🗑️ Sending DELETE request with params: $params");
+          // TODO: Implement DELETE logic
+          return null;
+
+        case RequestEnum.put:
+          print("🛠️ Sending PUT request with params: $params");
+          // TODO: Implement PUT logic
+          return null;
+      }
+    } catch (e, stack) {
+      print("🔥 Exception in serverRequest: $e");
+      print("🧱 Stack Trace: $stack");
+      return null;
     }
   }
 }
