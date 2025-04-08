@@ -1,9 +1,18 @@
 import 'package:cart_service/config/network_config.dart';
+import 'package:cart_service/config/request.dart';
 import 'package:cart_service/enums/request_enum.dart';
 import 'package:cart_service/models/cart/cart_item.dart';
+import 'package:cart_service/models/error/error.dart';
 import 'package:cart_service/repository/cart_repository.dart';
+import 'package:either_dart/either.dart';
+import 'package:flutter/foundation.dart';
 
 class CartService<T> {
+  CartService() {
+    assert(T != dynamic,
+        'You must explicitly specify the type parameter <T> when creating CartService');
+  }
+
   /// List to hold cart items
   final List<CartModel<T>> _cartItems = [];
 
@@ -20,11 +29,12 @@ class CartService<T> {
       final existingItem = _cartItems[existingItemIndex];
       _cartItems[existingItemIndex] = existingItem.copyWith(
           quantity: existingItem.quantity + product.quantity);
-      print('${product.product} already in the cart, incrementing quantity.');
+      debugPrint(
+          '${product.product} already in the cart, incrementing quantity.');
     } else {
       // If item doesn't exist, add it to the cart
       _cartItems.add(product);
-      print('${product.product} added to the cart.');
+      debugPrint('${product.product} added to the cart.');
     }
   }
 
@@ -40,11 +50,11 @@ class CartService<T> {
         final existingItem = _cartItems[existingItemIndex];
         _cartItems[existingItemIndex] = existingItem.copyWith(
             quantity: existingItem.quantity + item.quantity);
-        print(' Product ${item.product} exist Incrementing quantity.');
+        debugPrint(' Product ${item.product} exist Incrementing quantity.');
       } else {
         // If the product doesn't exist, add it to the cart
         _cartItems.add(item);
-        print('Added ${item.product} to the cart.');
+        debugPrint('Added ${item.product} to the cart.');
       }
     }
   }
@@ -116,7 +126,7 @@ class CartService<T> {
       }
       return list;
     } catch (e, stack) {
-      print("Errror occured while adding data to cart:$stack");
+      debugPrint("Errror occured while adding data to cart:$stack");
       rethrow;
     }
   }
@@ -124,7 +134,7 @@ class CartService<T> {
   /// send cart order to server
   /// http method is default post if no  method selected from [RequestEnum]
   /// params are null by default  and token are null by default
-  Future<dynamic> serverRequest({
+  Future<Either<ErrorMap, List<T>>> serverRequest({
     RequestEnum method = RequestEnum.post,
     Map<String, dynamic>? params,
     String? token,
@@ -134,44 +144,34 @@ class CartService<T> {
     try {
       switch (method) {
         case RequestEnum.get:
-          print(
+          debugPrint(
               "📥 Sending GET request for endpoint: $endPoint with params: $params");
-          final result = await CartRepository<T>().productItems(
+          return await CartRepository<T>().productItems(
             endPoint: endPoint,
             token: token,
             params: params,
             fromJson: fromJson,
           );
-          return result.fold(
-            (error) {
-              print("❌ Error occurred: ${error.message}");
-              return error;
-            },
-            (data) {
-              print("✅ Fetched data: $data");
-              return data;
-            },
-          );
 
         case RequestEnum.post:
-          print("📤 Sending POST request with params: $params");
+          debugPrint("📤 Sending POST request with params: $params");
           // TODO: Implement POST logic
-          return null;
+          return Left(ErrorMap());
 
         case RequestEnum.delete:
-          print("🗑️ Sending DELETE request with params: $params");
+          debugPrint("🗑️ Sending DELETE request with params: $params");
           // TODO: Implement DELETE logic
-          return null;
+          return Left(ErrorMap());
 
         case RequestEnum.put:
-          print("🛠️ Sending PUT request with params: $params");
+          debugPrint("🛠️ Sending PUT request with params: $params");
           // TODO: Implement PUT logic
-          return null;
+          return Left(ErrorMap());
       }
     } catch (e, stack) {
-      print("🔥 Exception in serverRequest: $e");
-      print("🧱 Stack Trace: $stack");
-      return null;
+      debugPrint("🔥 Exception in serverRequest: $e");
+      debugPrint("🧱 Stack Trace: $stack");
+      rethrow;
     }
   }
 }

@@ -1,9 +1,10 @@
 import 'package:cart_service/config/network_config.dart';
 import 'package:example/models/product.dart';
+import 'package:example/provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  //initilialize cart  baser url
   CartNetworkConfig.init("fakestoreapi.com");
   runApp(const MyApp());
 }
@@ -13,66 +14,82 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Product Fetcher',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
+      ],
+      child: MaterialApp(
+        title: 'Product Fetcher',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: const HomeScreen(),
       ),
-      home: ProductListScreen(),
     );
   }
 }
 
-class ProductListScreen extends StatefulWidget {
-  const ProductListScreen({super.key});
-
-  @override
-  _ProductListScreenState createState() => _ProductListScreenState();
-}
-
-class _ProductListScreenState extends State<ProductListScreen> {
-  // late Future<List<ProductModel>> _productList;
-  // final CartService _cartService = CartService();
-
-  @override
-  void initState() {
-    super.initState();
-    // _productList = _cartService.fetchProducts();
-  }
+// Home Screen with View Products Button
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Products'),
+      appBar: AppBar(title: const Text("Home")),
+      body: Center(
+        child: ElevatedButton(
+          child: const Text("View Products"),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ProductListScreen()),
+            );
+          },
+        ),
       ),
-      body: FutureBuilder<List<ProductModel>>(
-        future: _productList,
+    );
+  }
+}
+
+// Product List Page
+class ProductListScreen extends StatelessWidget {
+  const ProductListScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final productProvider =
+        Provider.of<ProductProvider>(context, listen: false);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Products')),
+      body: FutureBuilder(
+        future: productProvider.fetchProducts(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No products found'));
-          } else {
-            List<ProductModel> products = snapshot.data!;
-            return ListView.builder(
-              itemCount: products.length,
-              itemBuilder: (context, index) {
-                final product = products[index];
-                return ListTile(
-                  leading: Image.network(product.image, width: 50, height: 50),
-                  title: Text(product.title),
-                  subtitle: Text('\$${product.price.toString()}'),
-                  onTap: () {
-                    // You can add any functionality here when the product is tapped
-                    print('Tapped on ${product.title}');
+          return Consumer<ProductProvider>(
+            builder: (context, provider, _) {
+              if (provider.isLoading) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (provider.hasErr) {
+                return Center(child: Text('Error: ${provider.err.message}'));
+              } else if (provider.products.isEmpty) {
+                return const Center(child: Text('No products found'));
+              } else {
+                return ListView.builder(
+                  itemCount: provider.products.length,
+                  itemBuilder: (context, index) {
+                    final product = provider.products[index];
+                    return ListTile(
+                      leading:
+                          Image.network(product.image, width: 50, height: 50),
+                      title: Text(product.title),
+                      subtitle: Text('\$${product.price}'),
+                    );
                   },
                 );
-              },
-            );
-          }
+              }
+            },
+          );
         },
       ),
     );
