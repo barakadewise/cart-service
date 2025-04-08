@@ -21,7 +21,7 @@ class CartRepository<T> {
 
       debugPrint("response: ${response.data}");
 
-      if (response.status ~/ 100 == 2 && response.data['success']) {
+      if (response.status ~/ 100 == 2) {
         final List<dynamic> rawList = response.data['data'];
 
         // Convert List<dynamic> to List<T> using fromJson
