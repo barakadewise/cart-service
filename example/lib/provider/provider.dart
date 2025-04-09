@@ -37,8 +37,8 @@ class ProductProvider extends ChangeNotifier {
         notifyListeners();
       });
     } catch (e, track) {
-      print("❌ Error occurred while fetching products: $e");
-      print("🧱 Stack trace: $track");
+      debugPrint("❌ Error occurred while fetching products: $e");
+      debugPrint("🧱 Stack trace: $track");
       isLoading = false;
       notifyListeners();
     }

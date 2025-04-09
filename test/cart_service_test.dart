@@ -97,7 +97,7 @@ void main() {
   //     token: "wsiensjdywyeydjahywtrge6374w,dharf7.sorjYYWENngvZLDSFUBXZL",
   //     endPoint: "");
   print("Starting to fetsch data .....");
-  
+
   // Stop the stopwatch and print the execution time
   stopwatch.stop();
   print('\n⏱ Program executed in ${stopwatch.elapsedMilliseconds}ms');

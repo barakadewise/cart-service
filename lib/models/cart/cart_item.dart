@@ -8,7 +8,7 @@ class CartModel<T> extends Equatable {
 
   @override
   List<Object?> get props => [product, quantity];
-  
+
   @override
   String toString() => 'CartModel<$T>($product, $quantity)';
 

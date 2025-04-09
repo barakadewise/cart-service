@@ -1,5 +1,3 @@
-import 'package:cart_service/config/network_config.dart';
-import 'package:cart_service/config/request.dart';
 import 'package:cart_service/enums/request_enum.dart';
 import 'package:cart_service/models/cart/cart_item.dart';
 import 'package:cart_service/models/error/error.dart';
@@ -66,7 +64,7 @@ class CartService<T> {
   }
 
   ///increment single  product on the cart
-  void incrementProduct(T item) {
+  void incrementItem(T item) {
     final index = _cartItems.indexWhere((e) => e.product == item);
 
     /// throw product not found if not in the list
@@ -77,8 +75,8 @@ class CartService<T> {
     }
   }
 
-  ///decrement elements of cart
-  void decrementProduct(T item) {
+  ///decrement item  in the cart
+  void decrementItem(T item) {
     final index = _cartItems.indexWhere((e) => e.product == item);
 
     ///throw an error if the product was not found in the cart
@@ -99,14 +97,14 @@ class CartService<T> {
     _cartItems.removeWhere((i) => i.product == item);
   }
 
-  ///remove all related products(multiple products)
+  ///remove all related itesm(multiple products)
   void removeItems(List<T> product) {
     for (var item in product) {
       _cartItems.removeWhere((e) => e.product == item);
     }
   }
 
-  /// Return all products in the cart
+  /// Return all items in  cart
   List<CartModel<T>> getItems() {
     return _cartItems;
   }

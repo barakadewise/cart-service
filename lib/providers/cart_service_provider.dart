@@ -1,3 +1,3 @@
 import 'package:flutter/foundation.dart';
 
-class CartServiceProvider  extends ChangeNotifier{}
+class CartServiceProvider extends ChangeNotifier {}

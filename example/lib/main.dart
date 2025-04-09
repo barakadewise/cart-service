@@ -1,6 +1,8 @@
 import 'package:cart_service/config/network_config.dart';
-import 'package:example/models/product.dart';
-import 'package:example/provider.dart';
+import 'package:example/provider/cart_provider.dart';
+import 'package:example/provider/provider.dart';
+import 'package:example/widgets/cart_page.dart';
+import 'package:example/widgets/product_details.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -17,6 +19,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider())
       ],
       child: MaterialApp(
         title: 'Product Fetcher',
@@ -53,43 +56,108 @@ class HomeScreen extends StatelessWidget {
 }
 
 // Product List Page
-class ProductListScreen extends StatelessWidget {
+class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final productProvider =
-        Provider.of<ProductProvider>(context, listen: false);
+  State<ProductListScreen> createState() => _ProductListScreenState();
+}
 
+class _ProductListScreenState extends State<ProductListScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final productProvider =
+          Provider.of<ProductProvider>(context, listen: false);
+      productProvider.fetchProducts();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Products')),
-      body: FutureBuilder(
-        future: productProvider.fetchProducts(),
-        builder: (context, snapshot) {
-          return Consumer<ProductProvider>(
-            builder: (context, provider, _) {
-              if (provider.isLoading) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (provider.hasErr) {
-                return Center(child: Text('Error: ${provider.err.message}'));
-              } else if (provider.products.isEmpty) {
-                return const Center(child: Text('No products found'));
-              } else {
-                return ListView.builder(
-                  itemCount: provider.products.length,
-                  itemBuilder: (context, index) {
-                    final product = provider.products[index];
-                    return ListTile(
-                      leading:
-                          Image.network(product.image, width: 50, height: 50),
-                      title: Text(product.title),
-                      subtitle: Text('\$${product.price}'),
+      appBar: AppBar(
+        title: const Text('Products'),
+        actions: [
+          Consumer<CartProvider>(
+            builder: (context, cartProvider, _) {
+              final cartCount = cartProvider.cartProducts.length;
+
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.shopping_cart),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const CartPage()),
+                      );
+                    },
+                  ),
+                  if (cartCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 20,
+                          minHeight: 20,
+                        ),
+                        child: Text(
+                          '$cartCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+      body: Consumer<ProductProvider>(
+        builder: (context, provider, _) {
+          if (provider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (provider.hasErr) {
+            return Center(child: Text('Error: ${provider.err.message}'));
+          } else if (provider.products.isEmpty) {
+            return const Center(child: Text('No products found'));
+          } else {
+            return ListView.builder(
+              itemCount: provider.products.length,
+              itemBuilder: (context, index) {
+                final product = provider.products[index];
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ProductDetailScreen(product: product),
+                      ),
                     );
                   },
+                  child: ListTile(
+                    leading:
+                        Image.network(product.image, width: 50, height: 50),
+                    title: Text(product.title),
+                    subtitle: Text('\$${product.price}'),
+                  ),
                 );
-              }
-            },
-          );
+              },
+            );
+          }
         },
       ),
     );

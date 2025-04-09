@@ -34,7 +34,7 @@ class CartRepository<T> {
     } catch (e, stack) {
       debugPrint("🔥 Exception during request: $e");
       debugPrint("🧱 Stack trace: $stack");
-      return Left(ErrorMap(message: e.toString(), errorMap: {}));
+      rethrow;
     }
   }
 }

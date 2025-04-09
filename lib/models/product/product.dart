@@ -39,10 +39,6 @@ class Product extends Equatable {
   }
 }
 
-
-
-
-
 class ProductModel extends Equatable {
   final int id;
   final String title;
