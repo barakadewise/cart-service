@@ -37,4 +37,24 @@ class CartRepository<T> {
       rethrow;
     }
   }
+
+  Future<Either<ErrorMap, Response>> sendOrders(
+      Map<String, dynamic> params, String? token) async {
+    try {
+      var response = await ApplicationBaseRequest.post(
+              token: token ?? "", CartNetworkConfig.baseUrl, 'endpoint', params)
+          .request();
+      if (response.status ~/ 100 == 2) {
+        return Right(response);
+      } else {
+        return Left(ErrorMap(
+            body: response.body,
+            message: response.message,
+            errorMap: response.data));
+      }
+    } catch (e, trace) {
+      debugPrint("Error occured while sending order:$e \n $trace");
+      rethrow;
+    }
+  }
 }

@@ -108,14 +108,12 @@ class ApplicationBaseRequest {
             ? data!.map((key, value) => MapEntry(key, value?.toString()))
             : {};
 
-      
         final Uri requestUrl = getUri(baseUrl, endpoint, params);
         debugPrint("GET Request URL: $requestUrl ");
 
         response = await http
             .get(requestUrl, headers: _getHeaders())
             .timeout(const Duration(seconds: 60));
-        
       }
 
       if (method.toLowerCase() == "delete") {
@@ -241,7 +239,7 @@ class ApplicationBaseRequest {
     if (token != "") {
       headers['Authorization'] = 'Bearer $token';
     }
-    debugPrint("Headers:$headers");
+    // debugPrint("Headers:$headers");
     return headers;
   }
 }

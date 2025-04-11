@@ -1,3 +1,4 @@
+import 'package:cart_service/config/request.dart';
 import 'package:cart_service/enums/request_enum.dart';
 import 'package:cart_service/models/cart/cart_item.dart';
 import 'package:cart_service/models/error/error.dart';
@@ -16,7 +17,10 @@ class CartService<T> {
 
   /// Method to add a single item to the cart
   /// if quantity not given default value for the product
-  /// will be int quantinty =1
+  /// will be int quantinty =1  exmple usage cartService.addItem(CartModel(product: product))
+  /// where [product] is the  product to added to cart.
+  /// sample usage with quantity given cartService.addItem(CartModel(product: product,quantity: 20))
+
   void addItem(CartModel<T> product) {
     // Check if the item is already in the cart
     final existingItemIndex =
@@ -192,4 +196,10 @@ class CartService<T> {
       rethrow;
     }
   }
+
+  Future<Either<ErrorMap, Response>> sendOrders({
+    Map<String, dynamic>? params,
+    String? token,
+    required String endPoint,
+  }) async {}
 }
