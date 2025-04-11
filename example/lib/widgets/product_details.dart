@@ -1,6 +1,7 @@
 import 'package:cart_service/models/cart/cart_item.dart';
 import 'package:example/models/product.dart';
 import 'package:example/provider/cart_provider.dart';
+import 'package:example/widgets/cart_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -28,15 +29,36 @@ class ProductDetailScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(product.description),
             const Spacer(),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.add_shopping_cart),
-              label: const Text('Add to Cart'),
-              onPressed: () {
-                cartProvider.addCart(CartModel(product: product));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Added to cart')),
-                );
-              },
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.add_shopping_cart),
+                    label: const Text('Add to Cart'),
+                    onPressed: () {
+                      cartProvider.addCart(CartModel(product: product));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Added to cart')),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                cartProvider.cartProducts.isNotEmpty
+                    ? Expanded(
+                        child: ElevatedButton.icon(
+                            icon: const Icon(Icons.shopping_cart),
+                            label: const Text('cart'),
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green),
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const CartPage()))),
+                      )
+                    : const SizedBox()
+              ],
             ),
           ],
         ),

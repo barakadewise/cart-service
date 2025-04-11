@@ -2,6 +2,7 @@ import 'package:cart_service/config/network_config.dart';
 import 'package:example/provider/cart_provider.dart';
 import 'package:example/provider/provider.dart';
 import 'package:example/widgets/cart_page.dart';
+import 'package:example/widgets/home_content.dart';
 import 'package:example/widgets/product_details.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +23,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CartProvider())
       ],
       child: MaterialApp(
-        title: 'Product Fetcher',
+        debugShowCheckedModeBanner: false,
+        title: 'Product',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
@@ -33,23 +35,39 @@ class MyApp extends StatelessWidget {
 }
 
 // Home Screen with View Products Button
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex = 0;
+
+  final List<Widget> _pages = const [
+    HomeContent(),
+    ProductListScreen(),
+    CartPage(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Home")),
-      body: Center(
-        child: ElevatedButton(
-          child: const Text("View Products"),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ProductListScreen()),
-            );
-          },
-        ),
+      body: SafeArea(child: _pages[_currentIndex]),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        selectedItemColor: Colors.blueAccent,
+        unselectedItemColor: Colors.grey,
+        onTap: (index) {
+          setState(() => _currentIndex = index);
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.shop), label: "Products"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_cart), label: "Cart"),
+        ],
       ),
     );
   }

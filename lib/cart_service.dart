@@ -58,7 +58,7 @@ class CartService<T> {
   }
 
   /// get map list of products in cart with their quantities
-  List<Map<String, dynamic>> printCartItemsAsJson(
+  List<Map<String, dynamic>> currentUserOrders(
       Map<String, dynamic> Function(T) toJson) {
     return _cartItems.map((item) => item.toJson(toJson)).toList();
   }
@@ -93,15 +93,35 @@ class CartService<T> {
   }
 
   /// Remove single product(single product)
+  /// Use this method only when you need to remove specific
+  /// product form the cartitems regardless its quantity
+  /// T is your specified productmodel example
+  /// cartService.removeItem(ProductModel product)
   void removeItem(T item) {
     _cartItems.removeWhere((i) => i.product == item);
   }
 
-  ///remove all related itesm(multiple products)
-  void removeItems(List<T> product) {
-    for (var item in product) {
-      _cartItems.removeWhere((e) => e.product == item);
+  ///remove all related items (multiple products)
+  ///Use this in case you  need to specify spicific
+  ///array of cart items and not the whole cart items
+  ///for this method you have to specific Cartmodel<T>
+  ///where <T>  is you Productmodel (e.g CartModel<ProductModel>)
+
+  void removeItems(List<CartModel<T>> itemsToRemove) {
+    final toRemove =
+        _cartItems.where((e) => itemsToRemove.contains(e)).toList();
+    for (var item in toRemove) {
+      _cartItems.remove(item);
     }
+  }
+
+  ///calculate the products total prcices
+  double getTotalPrice(double Function(T product) priceExtractor) {
+    double total = 0.0;
+    for (var item in _cartItems) {
+      total += priceExtractor(item.product) * item.quantity;
+    }
+    return total;
   }
 
   /// Return all items in  cart

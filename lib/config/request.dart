@@ -108,19 +108,19 @@ class ApplicationBaseRequest {
             ? data!.map((key, value) => MapEntry(key, value?.toString()))
             : {};
 
-        print("method $method");
+      
         final Uri requestUrl = getUri(baseUrl, endpoint, params);
-        print("GET Request URL: $requestUrl ");
+        debugPrint("GET Request URL: $requestUrl ");
 
         response = await http
             .get(requestUrl, headers: _getHeaders())
             .timeout(const Duration(seconds: 60));
-        print("Complleted request:");
+        
       }
 
       if (method.toLowerCase() == "delete") {
         final Uri requestUrl = getUri(baseUrl, endpoint);
-        print("DELETE Request URL: $requestUrl");
+        debugPrint("DELETE Request URL: $requestUrl");
 
         var req = http.MultipartRequest(method.toUpperCase(), requestUrl);
         data!.forEach((key, value) async {
@@ -142,7 +142,7 @@ class ApplicationBaseRequest {
 
       if (method.toLowerCase() == "post") {
         final Uri requestUrl = getUri(baseUrl, endpoint);
-        print("POST Request URL: $requestUrl");
+        debugPrint("POST Request URL: $requestUrl");
 
         var req = http.MultipartRequest(method.toUpperCase(), requestUrl);
         data!.forEach((key, value) async {
@@ -177,7 +177,7 @@ class ApplicationBaseRequest {
 
       if (method.toLowerCase() == "put") {
         final Uri requestUrl = getUri(baseUrl, endpoint);
-        print("PUT Request URL: $requestUrl");
+        debugPrint("PUT Request URL: $requestUrl");
 
         var req = http.MultipartRequest(method.toUpperCase(), requestUrl);
         req.fields['_method'] = "PUT";
