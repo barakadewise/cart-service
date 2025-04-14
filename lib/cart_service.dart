@@ -197,9 +197,11 @@ class CartService<T> {
     }
   }
 
-  Future<Either<ErrorMap, Response>> sendOrders({
-    Map<String, dynamic>? params,
-    String? token,
-    required String endPoint,
-  }) async {}
+  // Future<Either<ErrorMap, Response>> sendOrders({
+  //   Map<String, dynamic>? params,
+  //   String? token,
+  //   required String endPoint,
+  // }) async {
+
+  // }
 }

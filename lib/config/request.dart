@@ -103,7 +103,8 @@ class ApplicationBaseRequest {
   Future<Response> request() async {
     late http.Response response;
     try {
-      if (method.toLowerCase() == "get") {
+      final lowerMethod = method.toLowerCase();
+      if (lowerMethod == "get") {
         final Map<String, String?> params = data != null
             ? data!.map((key, value) => MapEntry(key, value?.toString()))
             : {};
@@ -136,58 +137,52 @@ class ApplicationBaseRequest {
         req.headers.addAll(_getHeaders());
         response = await http.Response.fromStream(await req.send())
             .timeout(const Duration(seconds: 60));
-      }
+      } else if (lowerMethod == "delete" ||
+          lowerMethod == "post" ||
+          lowerMethod == "put") {
+        if (CartNetworkConfig.useJson) {
+          //send data as json format in the body
+          final Uri requestUrl = getUri(baseUrl, endpoint);
+          debugPrint("${method.toUpperCase()} JSON Request URL: $requestUrl");
+          debugPrint("Body: ${jsonEncode(data)}");
 
-      if (method.toLowerCase() == "post") {
-        final Uri requestUrl = getUri(baseUrl, endpoint);
-        debugPrint("POST Request URL: $requestUrl");
-
-        var req = http.MultipartRequest(method.toUpperCase(), requestUrl);
-        data!.forEach((key, value) async {
-          if (value is String ||
-              value is double ||
-              value is int ||
-              value is DateTime) {
-            req.fields[key] = value.toString();
+          response = await http.Request(method.toUpperCase(), requestUrl)
+              .sendJson(data ?? {}, _getHeaders())
+              .timeout(const Duration(seconds: 60));
+        } else {
+          //if not json format data proceed to formdata
+          final Uri requestUrl = getUri(baseUrl, endpoint);
+          var req = http.MultipartRequest(method.toUpperCase(), requestUrl);
+          if (lowerMethod == "put") {
+            req.fields['_method'] = "PUT";
           }
-          if (value is List) {
-            for (int i = 0; i < value.length; i++) {
-              req.fields["$key[$i]"] = value[i].toString();
+
+          data!.forEach((key, value) async {
+            if (value is String || value is num || value is DateTime) {
+              req.fields[key] = value.toString();
+            } else if (value is List) {
+              for (int i = 0; i < value.length; i++) {
+                req.fields["$key[$i]"] = value[i].toString();
+              }
+            } else if (value is Map) {
+              value.forEach((k, v) {
+                req.fields["$key[$k]"] = v.toString();
+              });
+            } else if (value is PlatformFile) {
+              req.files.add(http.MultipartFile.fromBytes(
+                key,
+                value.bytes!.toList(),
+                filename: value.name,
+              ));
+            } else if (value is File) {
+              req.files.add(await http.MultipartFile.fromPath(key, value.path));
             }
-          }
-          if (value is Map) {
-            value.forEach((k, v) {
-              req.fields["$key[$k]"] = v.toString();
-            });
-          }
-          if (value is PlatformFile || value is File) {
-            req.files.add(await http.MultipartFile.fromPath(
-              key,
-              value.path!,
-            ));
-          }
-        });
+          });
 
-        req.headers.addAll(_getHeaders());
-        response = await http.Response.fromStream(await req.send())
-            .timeout(const Duration(seconds: 60));
-      }
-
-      if (method.toLowerCase() == "put") {
-        final Uri requestUrl = getUri(baseUrl, endpoint);
-        debugPrint("PUT Request URL: $requestUrl");
-
-        var req = http.MultipartRequest(method.toUpperCase(), requestUrl);
-        req.fields['_method'] = "PUT";
-        data!.forEach((key, value) async {
-          if (value is String || value is double || value is int) {
-            req.fields[key] = value.toString();
-          }
-        });
-
-        req.headers.addAll(_getHeaders());
-        response = await http.Response.fromStream(await req.send())
-            .timeout(const Duration(seconds: 60));
+          req.headers.addAll(_getHeaders());
+          response = await http.Response.fromStream(await req.send())
+              .timeout(const Duration(seconds: 60));
+        }
       }
     } on SocketException {
       return Response(
@@ -216,7 +211,7 @@ class ApplicationBaseRequest {
       final decoded = jsonDecode(response.body);
       return Response(
         status: response.statusCode,
-        data: {"data": decoded},
+        data: decoded as Map<String, dynamic>,
         message: response.reasonPhrase,
         body: response.body,
       );
@@ -224,7 +219,7 @@ class ApplicationBaseRequest {
       return Response(
         status: response.statusCode,
         data: {
-          "error": "Decoding Error",
+          "error": "Error decoding response",
           "response": response.body,
         },
         message: response.reasonPhrase,
@@ -239,7 +234,6 @@ class ApplicationBaseRequest {
     if (token != "") {
       headers['Authorization'] = 'Bearer $token';
     }
-    // debugPrint("Headers:$headers");
     return headers;
   }
 }
@@ -258,3 +252,66 @@ class Response {
     this.body,
   });
 }
+
+extension HttpRequestSendJson on http.Request {
+  Future<http.Response> sendJson(
+      Map<String, dynamic> data, Map<String, String> headers) async {
+    this.headers.addAll(headers);
+    body = jsonEncode(data);
+    final streamedResponse = await send();
+    return await http.Response.fromStream(streamedResponse);
+  }
+}
+
+
+// if (method.toLowerCase() == "post") {
+      //   final Uri requestUrl = getUri(baseUrl, endpoint);
+      //   debugPrint("POST Request URL: $requestUrl");
+
+      //   var req = http.MultipartRequest(method.toUpperCase(), requestUrl);
+      //   data!.forEach((key, value) async {
+      //     if (value is String ||
+      //         value is double ||
+      //         value is int ||
+      //         value is DateTime) {
+      //       req.fields[key] = value.toString();
+      //     }
+      //     if (value is List) {
+      //       for (int i = 0; i < value.length; i++) {
+      //         req.fields["$key[$i]"] = value[i].toString();
+      //       }
+      //     }
+      //     if (value is Map) {
+      //       value.forEach((k, v) {
+      //         req.fields["$key[$k]"] = v.toString();
+      //       });
+      //     }
+      //     if (value is PlatformFile || value is File) {
+      //       req.files.add(await http.MultipartFile.fromPath(
+      //         key,
+      //         value.path!,
+      //       ));
+      //     }
+      //   });
+
+      //   req.headers.addAll(_getHeaders());
+      //   response = await http.Response.fromStream(await req.send())
+      //       .timeout(const Duration(seconds: 60));
+      // }
+
+      // if (method.toLowerCase() == "put") {
+      //   final Uri requestUrl = getUri(baseUrl, endpoint);
+      //   debugPrint("PUT Request URL: $requestUrl");
+
+      //   var req = http.MultipartRequest(method.toUpperCase(), requestUrl);
+      //   req.fields['_method'] = "PUT";
+      //   data!.forEach((key, value) async {
+      //     if (value is String || value is double || value is int) {
+      //       req.fields[key] = value.toString();
+      //     }
+      //   });
+
+      //   req.headers.addAll(_getHeaders());
+      //   response = await http.Response.fromStream(await req.send())
+      //       .timeout(const Duration(seconds: 60));
+      // }
