@@ -4,10 +4,10 @@ import 'package:example/models/product.dart';
 import 'package:flutter/material.dart';
 
 class CartProvider extends ChangeNotifier {
-  final CartService<ProductModel> cartService = CartService();
+  final CartService<ProductModel, Null> cartService = CartService();
 
   // Add to cart
-  void addCart(CartModel<ProductModel> product) {
+  void addCart(CartModel<ProductModel, Null> product) {
     cartService.addItem(product);
     notifyListeners();
   }
@@ -37,13 +37,14 @@ class CartProvider extends ChangeNotifier {
   }
 
   // Get cart items directly from service
-  List<CartModel<ProductModel>> get cartProducts => cartService.getItems();
+  List<CartModel<ProductModel, Null>> get cartProducts =>
+      cartService.getItems();
 
 // cart price
   double get totalAmount => cartService.getTotalPrice((p) => p.price);
 
   //remove all products
-  void removeAllItems(List<CartModel<ProductModel>> products) {
+  void removeAllItems(List<CartModel<ProductModel, Null>> products) {
     cartService.removeItems(products);
     notifyListeners();
   }

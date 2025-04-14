@@ -15,17 +15,17 @@ class ProductDetailScreen extends StatelessWidget {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
     return Scaffold(
-      appBar: AppBar(title: Text(product.title)),
+      appBar: AppBar(title: Text(product.name)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(child: Image.network(product.image, height: 150)),
+            Center(child: Image.network(product.productUrl, height: 150)),
             const SizedBox(height: 16),
-            Text(product.title, style: Theme.of(context).textTheme.titleLarge),
+            Text(product.name, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
-            Text('\$${product.price}', style: const TextStyle(fontSize: 20)),
+            Text('Tzs${product.price}', style: const TextStyle(fontSize: 20)),
             const SizedBox(height: 16),
             Text(product.description),
             const Spacer(),

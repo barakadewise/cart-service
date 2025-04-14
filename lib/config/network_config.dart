@@ -19,19 +19,20 @@ class CartNetworkConfig {
   ///   'https://api.example.com',
   ///   apiResponseSuccessKey: 'status',
   ///   useJson: true,
+  ///   dataAccessKey:'data' depends on your APi response
   /// );
   /// ```
-  static void init(
-    String baseUrl, {
-    String? apiResponseSuccessKey,
-    bool useJson = false,
-  }) {
+  static void init(String baseUrl,
+      {String? apiResponseSuccessKey,
+      bool useJson = false,
+      String? dataAccessKey}) {
     assert(baseUrl.isNotEmpty, 'Base URL is required and cannot be empty');
 
     _config = {
       'baseUrl': baseUrl,
       'apiSuccessKey': apiResponseSuccessKey,
       'useJson': useJson,
+      'dataAccessKey': dataAccessKey,
       'headers': {
         'access-control-allow-origin': '*',
         'Content-Type': 'application/json; charset=UTF-8',
@@ -65,4 +66,8 @@ class CartNetworkConfig {
   /// Returns the headers to be used in network requests.
   static Map<String, String> get headers =>
       Map<String, String>.from(_config?['headers'] ?? {});
+
+  /// This retuerns the key that is required to acces the data
+  /// from the api
+  static String get dataAccessKey => _config?['dataAccessKey'] ?? 'data';
 }

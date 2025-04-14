@@ -9,7 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  CartNetworkConfig.init("fakestoreapi.com");
+  // CartNetworkConfig.init("fakestoreapi.com");
+  CartNetworkConfig.init('fansika.bluetick.co.tz');
   runApp(const MyApp());
 }
 
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
-        ChangeNotifierProvider(create: (_)=>AuthProvider())
+        ChangeNotifierProvider(create: (_) => AuthProvider())
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -169,10 +170,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     );
                   },
                   child: ListTile(
-                    leading:
-                        Image.network(product.image, width: 50, height: 50),
-                    title: Text(product.title),
-                    subtitle: Text('\$${product.price}'),
+                    leading: Image.network(product.productUrl,
+                        width: 50, height: 50),
+                    title: Text(product.name),
+                    subtitle: Text('Tzs ${product.price}'),
                   ),
                 );
               },

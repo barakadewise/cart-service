@@ -8,6 +8,7 @@ class CartRepository<T> {
   Future<Either<ErrorMap, List<T>>> productItems({
     Map<String, dynamic>? params,
     String? token,
+    String? dataKey,
     required String endPoint,
     required T Function(Map<String, dynamic>) fromJson,
   }) async {
@@ -18,12 +19,9 @@ class CartRepository<T> {
         params: params,
         token: token ?? "",
       ).request();
-
-      debugPrint("response: ${response.data}");
-
+      debugPrint("API RESPONSE DATA: ${response.data}");
       if (response.status ~/ 100 == 2) {
-        final List<dynamic> rawList = response.data['data'];
-
+        final List<dynamic> rawList = response.data[dataKey ?? 'products'];
         // Convert List<dynamic> to List<T> using fromJson
         final List<T> itemList = rawList.map((item) => fromJson(item)).toList();
 
@@ -32,19 +30,19 @@ class CartRepository<T> {
         return Left(ErrorMap(message: response.body, errorMap: response.data));
       }
     } catch (e, stack) {
-      debugPrint("🔥 Exception during request: $e");
-      debugPrint("🧱 Stack trace: $stack");
+      debugPrint("🔥 Exception during request: $e stack trace:\n$stack");
       rethrow;
     }
   }
 
-  Future<Either<ErrorMap, Response>> sendOrders(
+  Future<Either<ErrorMap, Response>> fetchUserCarts(
+    String?dataKey,
       Map<String, dynamic> params, String? token) async {
     try {
       var response = await ApplicationBaseRequest.post(
               token: token ?? "", CartNetworkConfig.baseUrl, 'endpoint', params)
           .request();
-      if (response.status ~/ 100 == 2) {
+      if (response.status ~/ 100 == 2 && response.data[dataKey ?? 'products']) {
         return Right(response);
       } else {
         return Left(ErrorMap(

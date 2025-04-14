@@ -5,7 +5,7 @@ import 'package:example/models/product.dart';
 import 'package:flutter/material.dart';
 
 class ProductProvider extends ChangeNotifier {
-  final CartService<ProductModel> cartService = CartService<ProductModel>();
+  final CartService<ProductModel,Null> cartService = CartService();
   final List<ProductModel> _products = [];
   List<ProductModel> get products => _products;
   ErrorMap _error = ErrorMap.empty();
@@ -19,11 +19,10 @@ class ProductProvider extends ChangeNotifier {
     try {
       isLoading = true;
       notifyListeners();
-
-      final data = await cartService.serverRequest(
+      final data = await cartService.fetchProducts(
         method: RequestEnum.get,
         fromJson: (p) => ProductModel.fromJson(p),
-        endPoint: '/products',
+        endPoint: '/api/products',
       );
       data.fold((l) {
         _error = l;

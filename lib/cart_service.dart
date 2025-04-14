@@ -1,4 +1,3 @@
-import 'package:cart_service/config/request.dart';
 import 'package:cart_service/enums/request_enum.dart';
 import 'package:cart_service/models/cart/cart_item.dart';
 import 'package:cart_service/models/error/error.dart';
@@ -6,14 +5,14 @@ import 'package:cart_service/repository/cart_repository.dart';
 import 'package:either_dart/either.dart';
 import 'package:flutter/foundation.dart';
 
-class CartService<T> {
+class CartService<T, D extends Object?> {
   CartService() {
     assert(T != dynamic,
         'You must explicitly specify the type parameter <T> when creating CartService');
   }
 
   /// List to hold cart items
-  final List<CartModel<T>> _cartItems = [];
+  final List<CartModel<T, D>> _cartItems = [];
 
   /// Method to add a single item to the cart
   /// if quantity not given default value for the product
@@ -21,7 +20,7 @@ class CartService<T> {
   /// where [product] is the  product to added to cart.
   /// sample usage with quantity given cartService.addItem(CartModel(product: product,quantity: 20))
 
-  void addItem(CartModel<T> product) {
+  void addItem(CartModel<T, D> product) {
     // Check if the item is already in the cart
     final existingItemIndex =
         _cartItems.indexWhere((item) => item.product == product.product);
@@ -41,7 +40,7 @@ class CartService<T> {
   }
 
   ///add multiple products to cart
-  void addMultipleItems(List<CartModel<T>> items) {
+  void addMultipleItems(List<CartModel<T, D>> items) {
     for (var item in items) {
       // Check if the product already exists in the cart
       final existingItemIndex =
@@ -62,10 +61,10 @@ class CartService<T> {
   }
 
   /// get map list of products in cart with their quantities
-  List<Map<String, dynamic>> currentUserOrders(
-      Map<String, dynamic> Function(T) toJson) {
-    return _cartItems.map((item) => item.toJson(toJson)).toList();
-  }
+  // List<Map<String, dynamic>> currentUserOrders(
+  //     Map<String, dynamic> Function(T) toJson) {
+  //   return _cartItems.map((item) => item.toJson(toJson)).toList();
+  // }
 
   ///increment single  product on the cart
   void incrementItem(T item) {
@@ -111,12 +110,13 @@ class CartService<T> {
   ///for this method you have to specific Cartmodel<T>
   ///where <T>  is you Productmodel (e.g CartModel<ProductModel>)
 
-  void removeItems(List<CartModel<T>> itemsToRemove) {
-    final toRemove =
-        _cartItems.where((e) => itemsToRemove.contains(e)).toList();
-    for (var item in toRemove) {
-      _cartItems.remove(item);
-    }
+  void removeItems(List<CartModel<T, D>> itemsToRemove) {
+    _cartItems.removeWhere((cartItem) {
+      return itemsToRemove.any((itemToRemove) {
+        return cartItem.product == itemToRemove.product &&
+            cartItem.details == itemToRemove.details;
+      });
+    });
   }
 
   ///calculate the products total prcices
@@ -129,7 +129,7 @@ class CartService<T> {
   }
 
   /// Return all items in  cart
-  List<CartModel<T>> getItems() {
+  List<CartModel<T, D>> getItems() {
     return _cartItems;
   }
 
@@ -139,12 +139,14 @@ class CartService<T> {
   }
 
   ///return user carts list  from APi
-  List<CartModel<T>> userOrder(
-      List<dynamic> data, T Function(Map<String, dynamic>) fromJson) {
-    List<CartModel<T>> list = [];
+  List<CartModel<T, D>> userOrder(
+      List<dynamic> data,
+      T Function(Map<String, dynamic>) fromJson,
+      D? Function(Map<String, dynamic>) detailsFromJson) {
+    List<CartModel<T, D>> list = [];
     try {
       for (var i in data) {
-        list.add(CartModel.fromJson(i, fromJson));
+        list.add(CartModel.fromJson(i, fromJson, detailsFromJson));
       }
       return list;
     } catch (e, stack) {
@@ -156,40 +158,23 @@ class CartService<T> {
   /// send cart order to server
   /// http method is default post if no  method selected from [RequestEnum]
   /// params are null by default  and token are null by default
-  Future<Either<ErrorMap, List<T>>> serverRequest({
-    RequestEnum method = RequestEnum.post,
+  Future<Either<ErrorMap, List<T>>> fetchProducts({
+    RequestEnum method = RequestEnum.get,
     Map<String, dynamic>? params,
     String? token,
+    String? dataKey,
     required T Function(Map<String, dynamic>) fromJson,
     required String endPoint,
   }) async {
     try {
-      switch (method) {
-        case RequestEnum.get:
-          debugPrint(
-              "📥 Sending GET request for endpoint: $endPoint with params: $params");
-          return await CartRepository<T>().productItems(
-            endPoint: endPoint,
-            token: token,
-            params: params,
-            fromJson: fromJson,
-          );
-
-        case RequestEnum.post:
-          debugPrint("📤 Sending POST request with params: $params");
-          // TODO: Implement POST logic
-          return Left(ErrorMap());
-
-        case RequestEnum.delete:
-          debugPrint("🗑️ Sending DELETE request with params: $params");
-          // TODO: Implement DELETE logic
-          return Left(ErrorMap());
-
-        case RequestEnum.put:
-          debugPrint("🛠️ Sending PUT request with params: $params");
-          // TODO: Implement PUT logic
-          return Left(ErrorMap());
-      }
+      debugPrint(
+          "📥 Sending GET request for endpoint: $endPoint with params: $params");
+      return await CartRepository<T>().productItems(
+          endPoint: endPoint,
+          token: token,
+          params: params,
+          fromJson: fromJson,
+          dataKey: dataKey);
     } catch (e, stack) {
       debugPrint("🔥 Exception in serverRequest: $e");
       debugPrint("🧱 Stack Trace: $stack");
@@ -197,11 +182,29 @@ class CartService<T> {
     }
   }
 
-  // Future<Either<ErrorMap, Response>> sendOrders({
-  //   Map<String, dynamic>? params,
-  //   String? token,
-  //   required String endPoint,
-  // }) async {
-
-  // }
+  /// send cart order to server
+  /// http method is default post if no  method selected from [RequestEnum]
+  /// params are null by default  and token are null by default
+  Future<Either<ErrorMap, List<T>>> fetchUserOrder({
+    RequestEnum method = RequestEnum.get,
+    Map<String, dynamic>? params,
+    String? token,
+    String? dataKey,
+    required T Function(Map<String, dynamic>) fromJson,
+    required String endPoint,
+  }) async {
+    try {
+      debugPrint(
+          "📥 Sending GET request for endpoint: $endPoint with params: $params");
+      return await CartRepository<T>().productItems(
+          endPoint: endPoint,
+          token: token,
+          params: params,
+          fromJson: fromJson,
+          dataKey: dataKey);
+    } catch (e, stack) {
+      debugPrint("🔥 Exception in serverRequest: $e \n Stack Trace: $stack");
+      rethrow;
+    }
+  }
 }

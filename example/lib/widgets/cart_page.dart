@@ -43,14 +43,14 @@ class CartPage extends StatelessWidget {
                     final cartItem = items[index];
                     return ListTile(
                       leading: Image.network(
-                        cartItem.product.image,
+                        cartItem.product.productUrl,
                         width: 60,
                         height: 60,
                         fit: BoxFit.cover,
                       ),
-                      title: Text(cartItem.product.title),
+                      title: Text(cartItem.product.name),
                       subtitle: Text(
-                        "Quantity: ${cartItem.quantity} | \$${(cartItem.product.price * cartItem.quantity).toStringAsFixed(2)}",
+                        "Quantity: ${cartItem.quantity} |Tzs ${(cartItem.product.price * cartItem.quantity).toStringAsFixed(2)}",
                       ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -98,7 +98,7 @@ class CartPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      "Total: \$${cartProvider.totalAmount.toStringAsFixed(2)}",
+                      "Total: Tzs${cartProvider.totalAmount.toStringAsFixed(2)}",
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -128,13 +128,13 @@ class CartPage extends StatelessWidget {
                                 const SizedBox(height: 10),
                                 ...items.map((e) => ListTile(
                                       contentPadding: EdgeInsets.zero,
-                                      title: Text(e.product.title),
+                                      title: Text(e.product.name),
                                       trailing: Text(
-                                          "\$${(e.product.price * e.quantity).toStringAsFixed(2)}"),
+                                          "Tzs${(e.product.price * e.quantity).toStringAsFixed(2)}"),
                                     )),
                                 const Divider(),
                                 Text(
-                                  'Total: \$${cartProvider.totalAmount.toStringAsFixed(2)}',
+                                  'Total: \Tzs${cartProvider.totalAmount.toStringAsFixed(2)}',
                                   style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold),
