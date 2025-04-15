@@ -392,7 +392,7 @@ class ProductModel extends Equatable {
   }
 
   bool get productHasInstallment =>
-      this.hasInstallment == 1 && amountPerInstallment > 0;
+      hasInstallment == 1 && amountPerInstallment > 0;
 
   double get productPrice => getProductPrice();
 
@@ -428,7 +428,7 @@ class ProductModel extends Equatable {
     // }
   }
   double get depositAmount =>
-      productHasInstallment ? this.initialDeposit : productPrice;
+      productHasInstallment ? initialDeposit : productPrice;
 
   DateTime get endDate => DateTime.tryParse(endAt) ?? DateTime.now();
 

@@ -5,7 +5,7 @@ import 'package:example/models/product.dart';
 import 'package:flutter/material.dart';
 
 class ProductProvider extends ChangeNotifier {
-  final CartService<ProductModel,Null> cartService = CartService();
+  final CartService<ProductModel> cartService = CartService();
   final List<ProductModel> _products = [];
   List<ProductModel> get products => _products;
   ErrorMap _error = ErrorMap.empty();

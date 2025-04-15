@@ -5,14 +5,14 @@ import 'package:cart_service/repository/cart_repository.dart';
 import 'package:either_dart/either.dart';
 import 'package:flutter/foundation.dart';
 
-class CartService<T, D extends Object?> {
+class CartService<T> {
   CartService() {
     assert(T != dynamic,
         'You must explicitly specify the type parameter <T> when creating CartService');
   }
 
   /// List to hold cart items
-  final List<CartModel<T, D>> _cartItems = [];
+  final List<CartModel<T>> _cartItems = [];
 
   /// Method to add a single item to the cart
   /// if quantity not given default value for the product
@@ -20,7 +20,7 @@ class CartService<T, D extends Object?> {
   /// where [product] is the  product to added to cart.
   /// sample usage with quantity given cartService.addItem(CartModel(product: product,quantity: 20))
 
-  void addItem(CartModel<T, D> product) {
+  void addItem(CartModel<T> product) {
     // Check if the item is already in the cart
     final existingItemIndex =
         _cartItems.indexWhere((item) => item.product == product.product);
@@ -40,7 +40,7 @@ class CartService<T, D extends Object?> {
   }
 
   ///add multiple products to cart
-  void addMultipleItems(List<CartModel<T, D>> items) {
+  void addMultipleItems(List<CartModel<T>> items) {
     for (var item in items) {
       // Check if the product already exists in the cart
       final existingItemIndex =
@@ -110,11 +110,10 @@ class CartService<T, D extends Object?> {
   ///for this method you have to specific Cartmodel<T>
   ///where <T>  is you Productmodel (e.g CartModel<ProductModel>)
 
-  void removeItems(List<CartModel<T, D>> itemsToRemove) {
+  void removeItems(List<CartModel<T>> itemsToRemove) {
     _cartItems.removeWhere((cartItem) {
       return itemsToRemove.any((itemToRemove) {
-        return cartItem.product == itemToRemove.product &&
-            cartItem.details == itemToRemove.details;
+        return cartItem.product == itemToRemove.product;
       });
     });
   }
@@ -129,7 +128,7 @@ class CartService<T, D extends Object?> {
   }
 
   /// Return all items in  cart
-  List<CartModel<T, D>> getItems() {
+  List<CartModel<T>> getItems() {
     return _cartItems;
   }
 
@@ -139,21 +138,21 @@ class CartService<T, D extends Object?> {
   }
 
   ///return user carts list  from APi
-  List<CartModel<T, D>> userOrder(
-      List<dynamic> data,
-      T Function(Map<String, dynamic>) fromJson,
-      D? Function(Map<String, dynamic>) detailsFromJson) {
-    List<CartModel<T, D>> list = [];
-    try {
-      for (var i in data) {
-        list.add(CartModel.fromJson(i, fromJson, detailsFromJson));
-      }
-      return list;
-    } catch (e, stack) {
-      debugPrint("Errror occured while adding data to cart:$stack");
-      rethrow;
-    }
-  }
+  // List<CartModel<T, D>> userOrder(
+  //     List<dynamic> data,
+  //     T Function(Map<String, dynamic>) fromJson,
+  //     D? Function(Map<String, dynamic>) detailsFromJson) {
+  //   List<CartModel<T, D>> list = [];
+  //   try {
+  //     for (var i in data) {
+  //       list.add(CartModel.fromJson(i, fromJson, detailsFromJson));
+  //     }
+  //     return list;
+  //   } catch (e, stack) {
+  //     debugPrint("Errror occured while adding data to cart:$stack");
+  //     rethrow;
+  //   }
+  // }
 
   /// send cart order to server
   /// http method is default post if no  method selected from [RequestEnum]

@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 
 void main() {
   // CartNetworkConfig.init("fakestoreapi.com");
+  WidgetsFlutterBinding.ensureInitialized();
   CartNetworkConfig.init('fansika.bluetick.co.tz');
   runApp(const MyApp());
 }
@@ -37,7 +38,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Home Screen with View Products Button
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -45,7 +45,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   int _currentIndex = 0;
 
   final List<Widget> _pages = const [
@@ -53,6 +53,27 @@ class _HomeScreenState extends State<HomeScreen> {
     ProductListScreen(),
     CartPage(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      debugPrint("App Paused on Tab: $_currentIndex");
+    } else if (state == AppLifecycleState.resumed) {
+      debugPrint("App Resumed on Tab: $_currentIndex");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -1,14 +1,21 @@
 import 'package:cart_service/cart_service.dart';
+import 'package:cart_service/cart_service_copy.dart';
+import 'package:cart_service/models/cart/base_cart_model.dart';
 import 'package:cart_service/models/cart/cart_item.dart';
+import 'package:example/models/cart_model.dart';
+
 import 'package:example/models/product.dart';
 import 'package:flutter/material.dart';
 
 class CartProvider extends ChangeNotifier {
-  final CartService<ProductModel, Null> cartService = CartService();
+  final CartService<ProductModel> cartService = CartService();
+  final CartServiceCopy<ProductModel, CartModell> cartServiceCopy =
+      CartServiceCopy();
 
   // Add to cart
-  void addCart(CartModel<ProductModel, Null> product) {
+  void addCart(CartModel<ProductModel> product) {
     cartService.addItem(product);
+    // cartServiceCopy.addItem();
     notifyListeners();
   }
 
@@ -37,14 +44,13 @@ class CartProvider extends ChangeNotifier {
   }
 
   // Get cart items directly from service
-  List<CartModel<ProductModel, Null>> get cartProducts =>
-      cartService.getItems();
+  List<CartModel<ProductModel>> get cartProducts => cartService.getItems();
 
 // cart price
   double get totalAmount => cartService.getTotalPrice((p) => p.price);
 
   //remove all products
-  void removeAllItems(List<CartModel<ProductModel, Null>> products) {
+  void removeAllItems(List<CartModel<ProductModel>> products) {
     cartService.removeItems(products);
     notifyListeners();
   }

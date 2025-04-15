@@ -1,11 +1,16 @@
+import 'package:cart_service/models/cart/abstract_product.dart';
 import 'package:equatable/equatable.dart';
 
-class CartModel<T, D> extends Equatable{
+class CartModel<T> extends Equatable implements HasProduct<T> {
+  @override
   final T product;
-  final D? details;
+
   final int quantity;
 
-  const CartModel({required this.product, this.quantity = 1, this.details});
+  const CartModel({
+    required this.product,
+    this.quantity = 1,
+  });
 
   @override
   List<Object?> get props => [product, quantity];
@@ -13,15 +18,16 @@ class CartModel<T, D> extends Equatable{
   @override
   String toString() => 'CartModel<$T>($product, $quantity)';
 
-  /// Copy with
-  CartModel<T, D> copyWith({T? product, int? quantity, D? details}) {
-    return CartModel<T, D>(
-        product: product ?? this.product,
-        quantity: quantity ?? this.quantity,
-        details: details ?? this.details);
+  CartModel<T> copyWith({
+    T? product,
+    int? quantity,
+  }) {
+    return CartModel<T>(
+      product: product ?? this.product,
+      quantity: quantity ?? this.quantity,
+    );
   }
 
-  /// Convert to JSON (requires a toJson function)
   Map<String, dynamic> toJson(Map<String, dynamic> Function(T) toJson) {
     return {
       'product': toJson(product),
@@ -29,25 +35,13 @@ class CartModel<T, D> extends Equatable{
     };
   }
 
-  /// Create from JSON (requires a fromJson function)
   factory CartModel.fromJson(
     Map<String, dynamic> json,
     T Function(Map<String, dynamic>) fromJson,
-    D ?Function(Map<String,dynamic>) detailsFromJson,
   ) {
-    return CartModel<T,D>(
+    return CartModel<T>(
       product: fromJson(json['product']),
       quantity: json['quantity'],
-      details: detailsFromJson(json['details'])
-      
     );
   }
-
-  /// Get a list of CartModels from JSON array
-  // static List<CartModel<T,D>> getList<T>(
-  //   List<dynamic> jsonList,
-  //   T Function(Map<String, dynamic>) fromJson,
-  // ) {
-  //   return jsonList.map((e) => CartModel<T>.fromJson(e, fromJson)).toList();
-  // }
 }
