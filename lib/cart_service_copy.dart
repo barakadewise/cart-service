@@ -1,4 +1,10 @@
+import 'package:cart_service/config/network_config.dart';
+import 'package:cart_service/config/request.dart';
+import 'package:cart_service/enums/request_enum.dart';
 import 'package:cart_service/models/cart/base_cart_model.dart';
+import 'package:cart_service/models/error/error.dart';
+import 'package:cart_service/models/product/product.dart';
+import 'package:either_dart/either.dart';
 
 import 'package:flutter/foundation.dart';
 
@@ -81,5 +87,29 @@ class CartServiceCopy<T, C extends CartBaseModel<T>> {
   //Clear item in cart
   void clearItems() {
     _cartItems.clear();
+  }
+
+  //fetch single product
+  Future<Either<ErrorMap, List<T>>> getProducts(
+      {String? dataKey,
+      Map<String, dynamic>? params,
+      String? token,
+      required String endPoint,
+      required T Function(Map<String, dynamic>) fromJson}) async {
+    try {
+      var res = await ApplicationBaseRequest.get(
+              CartNetworkConfig.baseUrl, endPoint,
+              params: params, token: token ?? "")
+          .request();
+      if (res.status ~/ 100 == 2 && res.data[CartNetworkConfig.apiSuccessKey]) {
+        List<dynamic> data = res.data[dataKey ?? 'products'];
+        return Right(data.map((e) => fromJson(e)).toList());
+      } else {
+        return Left(ErrorMap(errorMap: res.data, message: res.message));
+      }
+    } catch (e, stack) {
+      debugPrint("Exeception caught: $e stack point \n $stack");
+      rethrow;
+    }
   }
 }
