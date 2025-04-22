@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  // CartNetworkConfig.init("fakestoreapi.com");
+
   WidgetsFlutterBinding.ensureInitialized();
   CartNetworkConfig.init('fansika.bluetick.co.tz');
   runApp(const MyApp());

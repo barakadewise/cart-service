@@ -9,3 +9,5 @@ abstract class CartBaseModel<T> {
   CartBaseModel<T> mergeWith(CartBaseModel<T> other);
   CartBaseModel<T> copyWith({T? product, int? quantity});
 }
+
+

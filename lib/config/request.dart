@@ -11,6 +11,7 @@ class ApplicationBaseRequest {
   String endpoint;
   String method;
   Map<String, dynamic>? data;
+  Map<String, dynamic>? extraHeaders;
   String? token;
   Uri Function(String, String, [Map<String, dynamic>?]) getUri;
 
@@ -20,16 +21,17 @@ class ApplicationBaseRequest {
     required this.method,
     this.data,
     this.token,
+    this.extraHeaders,
     required this.getUri,
   });
 
-  factory ApplicationBaseRequest.bootstrap({
-    required String baseUrl,
-    required String endpoint,
-    required String method,
-    Map<String, dynamic>? data,
-    String? token,
-  }) {
+  factory ApplicationBaseRequest.bootstrap(
+      {required String baseUrl,
+      required String endpoint,
+      required String method,
+      Map<String, dynamic>? data,
+      String? token,
+      Map<String, dynamic>? extraHeaders}) {
     getUri(String baseUrl, String endpoint, [Map<String, dynamic>? params]) {
       return Uri.https(baseUrl, endpoint, params);
     }
@@ -40,6 +42,7 @@ class ApplicationBaseRequest {
       method: method,
       data: data,
       token: token,
+      extraHeaders: extraHeaders,
       getUri: getUri,
     );
   }
@@ -48,57 +51,61 @@ class ApplicationBaseRequest {
     String baseUrl,
     String endpoint, {
     Map<String, dynamic>? params,
+    Map<String, dynamic>? extraHeaders,
     String token = "",
   }) =>
       ApplicationBaseRequest.bootstrap(
-        baseUrl: baseUrl,
-        endpoint: endpoint,
-        method: 'get',
-        data: params,
-        token: token,
-      );
+          baseUrl: baseUrl,
+          endpoint: endpoint,
+          method: 'get',
+          data: params,
+          token: token,
+          extraHeaders: extraHeaders);
 
   factory ApplicationBaseRequest.delete(
     String baseUrl,
     String endpoint, {
     Map<String, dynamic>? params,
+    Map<String, dynamic>? extraHeaders,
     String token = "",
   }) =>
       ApplicationBaseRequest.bootstrap(
-        baseUrl: baseUrl,
-        endpoint: endpoint,
-        method: 'delete',
-        data: params,
-        token: token,
-      );
+          baseUrl: baseUrl,
+          endpoint: endpoint,
+          method: 'delete',
+          data: params,
+          token: token,
+          extraHeaders: extraHeaders);
 
   factory ApplicationBaseRequest.post(
     String baseUrl,
     String endpoint,
-    Map<String, dynamic> payload, {
+    Map<String, dynamic> params, {
+    Map<String, dynamic>? extraHeaders,
     String token = "",
   }) =>
       ApplicationBaseRequest.bootstrap(
-        baseUrl: baseUrl,
-        endpoint: endpoint,
-        method: 'post',
-        data: payload,
-        token: token,
-      );
+          baseUrl: baseUrl,
+          endpoint: endpoint,
+          method: 'post',
+          data: params,
+          token: token,
+          extraHeaders: extraHeaders);
 
   factory ApplicationBaseRequest.patch(
     String baseUrl,
     String endpoint,
-    Map<String, dynamic> payload, {
+    Map<String, dynamic> params, {
+    Map<String, dynamic>? extraHeaders,
     String token = "",
   }) =>
       ApplicationBaseRequest.bootstrap(
-        baseUrl: baseUrl,
-        endpoint: endpoint,
-        method: "put",
-        data: payload,
-        token: token,
-      );
+          baseUrl: baseUrl,
+          endpoint: endpoint,
+          method: "put",
+          data: params,
+          token: token,
+          extraHeaders: extraHeaders);
 
   Future<Response> request() async {
     late http.Response response;
@@ -234,6 +241,12 @@ class ApplicationBaseRequest {
     if (token != "") {
       headers['Authorization'] = 'Bearer $token';
     }
+    //add extra headers if given
+    if (extraHeaders != null) {
+      extraHeaders!.forEach((k, v) {
+        headers[k] = v;
+      });
+    }
     return headers;
   }
 }
@@ -262,56 +275,3 @@ extension HttpRequestSendJson on http.Request {
     return await http.Response.fromStream(streamedResponse);
   }
 }
-
-
-// if (method.toLowerCase() == "post") {
-      //   final Uri requestUrl = getUri(baseUrl, endpoint);
-      //   debugPrint("POST Request URL: $requestUrl");
-
-      //   var req = http.MultipartRequest(method.toUpperCase(), requestUrl);
-      //   data!.forEach((key, value) async {
-      //     if (value is String ||
-      //         value is double ||
-      //         value is int ||
-      //         value is DateTime) {
-      //       req.fields[key] = value.toString();
-      //     }
-      //     if (value is List) {
-      //       for (int i = 0; i < value.length; i++) {
-      //         req.fields["$key[$i]"] = value[i].toString();
-      //       }
-      //     }
-      //     if (value is Map) {
-      //       value.forEach((k, v) {
-      //         req.fields["$key[$k]"] = v.toString();
-      //       });
-      //     }
-      //     if (value is PlatformFile || value is File) {
-      //       req.files.add(await http.MultipartFile.fromPath(
-      //         key,
-      //         value.path!,
-      //       ));
-      //     }
-      //   });
-
-      //   req.headers.addAll(_getHeaders());
-      //   response = await http.Response.fromStream(await req.send())
-      //       .timeout(const Duration(seconds: 60));
-      // }
-
-      // if (method.toLowerCase() == "put") {
-      //   final Uri requestUrl = getUri(baseUrl, endpoint);
-      //   debugPrint("PUT Request URL: $requestUrl");
-
-      //   var req = http.MultipartRequest(method.toUpperCase(), requestUrl);
-      //   req.fields['_method'] = "PUT";
-      //   data!.forEach((key, value) async {
-      //     if (value is String || value is double || value is int) {
-      //       req.fields[key] = value.toString();
-      //     }
-      //   });
-
-      //   req.headers.addAll(_getHeaders());
-      //   response = await http.Response.fromStream(await req.send())
-      //       .timeout(const Duration(seconds: 60));
-      // }

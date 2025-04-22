@@ -1,27 +1,43 @@
 import 'package:cart_service/config/network_config.dart';
 import 'package:cart_service/config/request.dart';
-import 'package:cart_service/enums/request_enum.dart';
 import 'package:cart_service/models/cart/base_cart_model.dart';
 import 'package:cart_service/models/error/error.dart';
-import 'package:cart_service/models/product/product.dart';
 import 'package:either_dart/either.dart';
 
 import 'package:flutter/foundation.dart';
 
+/// A generic and flexible cart service for managing cart items and performing
+/// product-related operations, such as adding/removing items and fetching from APIs.
+///
+/// This service is designed to support any cart item that extends [CartBaseModel<T>].
+/// - [T] is the type of the underlying product model (e.g., ProductModel)
+/// - [C] is the specific cart item model extending [CartBaseModel<T>]
+///
+/// ## Example usage:
+/// ```dart
+/// final cartService = CartServiceCopy<ProductModel, CartModell>();
+/// cartService.addItem(CartModell(product: product, quantity: 1));
+/// ```
+///
+/// Make sure your cart model:
+/// - Implements `isSameItemAs()` to compare similar cart entries
+/// - Implements `mergeWith()` to combine duplicate cart entries
+/// - Provides a `copyWith()` method for immutability
 class CartServiceCopy<T, C extends CartBaseModel<T>> {
+  /// Constructor enforces explicit typing of [T] to avoid runtime type errors.
   CartServiceCopy() {
     assert(T != dynamic,
         'You must explicitly specify the type parameter <T> when creating CartService');
   }
 
+  /// Internal list storing cart items
   final List<C> _cartItems = [];
+
+  /// Public getter to expose cart items
   List<C> get cartItems => _cartItems;
 
-  /// Method to add a single item to the cart
-  /// if quantity not given default value for the product
-  /// will be int quantinty =1  exmple usage cartService.addItem(CartModel(product: product))
-  /// where [product] is the  product to added to cart.
-  /// sample usage with quantity given cartService.addItem(CartModel(product: product,quantity: 20))
+  /// Adds a new item to the cart.
+  /// If an equivalent item exists (based on `isSameItemAs()`), it merges quantities.
   void addItem(C item) {
     final existingIndex = _cartItems.indexWhere((e) => e.isSameItemAs(item));
     if (existingIndex != -1) {
@@ -35,11 +51,7 @@ class CartServiceCopy<T, C extends CartBaseModel<T>> {
     }
   }
 
-  ///remove all related items (multiple products)
-  ///Use this in case you  need to specify spicific
-  ///array of cart items and not the whole cart items
-  ///for this method you have to specific Cartmodel<T>
-  ///where <T>  is you Productmodel (e.g CartModel<ProductModel>)
+  /// Removes a list of items from the cart by matching their product.
   void removeItems(List<C> itemsToRemove) {
     _cartItems.removeWhere((cartItem) {
       return itemsToRemove.any((itemToRemove) {
@@ -48,7 +60,7 @@ class CartServiceCopy<T, C extends CartBaseModel<T>> {
     });
   }
 
-  ///decrement item  in the cart
+  /// Increments the quantity of a single item in the cart.
   void incrementItem(C item) {
     final index = _cartItems.indexWhere((e) => e.isSameItemAs(item));
     if (index != -1) {
@@ -61,16 +73,13 @@ class CartServiceCopy<T, C extends CartBaseModel<T>> {
     }
   }
 
-  /// Remove single product(single product)
-  /// Use this method only when you need to remove specific
-  /// product form the cartitems regardless its quantity
-  /// T is your specified productmodel example
-  /// cartService.removeItem(ProductModel product)
+  /// Removes a specific item from the cart completely.
   void removeItem(C item) {
     _cartItems.removeWhere((e) => e.isSameItemAs(item));
   }
 
-  ///increment single  product on the cart
+  /// Decrements the quantity of an item in the cart.
+  /// If quantity reaches 0 or less, the item is removed.
   void decrementItem(C item) {
     final index = _cartItems.indexWhere((e) => e.isSameItemAs(item));
     if (index != -1) {
@@ -84,32 +93,76 @@ class CartServiceCopy<T, C extends CartBaseModel<T>> {
     }
   }
 
-  //Clear item in cart
+  /// Clears all items from the cart.
   void clearItems() {
     _cartItems.clear();
   }
 
-  //fetch single product
-  Future<Either<ErrorMap, List<T>>> getProducts(
-      {String? dataKey,
-      Map<String, dynamic>? params,
-      String? token,
-      required String endPoint,
-      required T Function(Map<String, dynamic>) fromJson}) async {
+  /// Fetches a list of products from the server.
+  ///
+  /// - [dataKey] – key under which the list exists in the response (default: 'products')
+  /// - [params] – optional query parameters
+  /// - [extraHeaders] – optional headers
+  /// - [token] – authentication token
+  /// - [endPoint] – API endpoint path
+  /// - [fromJson] – factory method to convert map to [T]
+  Future<Either<ErrorMap, List<T>>> getProducts({
+    String? dataKey,
+    Map<String, dynamic>? params,
+    Map<String, dynamic>? extraHeaders,
+    String? token,
+    required String endPoint,
+    required T Function(Map<String, dynamic>) fromJson,
+  }) async {
     try {
       var res = await ApplicationBaseRequest.get(
-              CartNetworkConfig.baseUrl, endPoint,
-              params: params, token: token ?? "")
-          .request();
+        CartNetworkConfig.baseUrl,
+        endPoint,
+        extraHeaders: extraHeaders,
+        params: params,
+        token: token ?? "",
+      ).request();
+
       if (res.status ~/ 100 == 2 && res.data[CartNetworkConfig.apiSuccessKey]) {
         List<dynamic> data = res.data[dataKey ?? 'products'];
         return Right(data.map((e) => fromJson(e)).toList());
       } else {
-        return Left(ErrorMap(errorMap: res.data, message: res.message));
+        return Left(ErrorMap(errorMap: res.data));
       }
     } catch (e, stack) {
-      debugPrint("Exeception caught: $e stack point \n $stack");
+      debugPrint("Exception caught: $e\nStacktrace:\n$stack");
       rethrow;
     }
   }
+
+  /// Fetches a single product from the server.
+  Future<Either<ErrorMap, T>> getProduct({
+    String? dataKey,
+    Map<String, dynamic>? params,
+    Map<String, dynamic>? extraHeaders,
+    String? token,
+    required String endPoint,
+    required T Function(Map<String, dynamic>) fromJson,
+  }) async {
+    try {
+      var res = await ApplicationBaseRequest.get(
+        CartNetworkConfig.baseUrl,
+        endPoint,
+        extraHeaders: extraHeaders,
+        params: params,
+        token: token ?? "",
+      ).request();
+
+      if (res.status ~/ 100 == 2 && res.data[CartNetworkConfig.apiSuccessKey]) {
+        return Right(fromJson(res.data[dataKey ?? 'product']));
+      } else {
+        return Left(ErrorMap(errorMap: res.data));
+      }
+    } catch (e, stack) {
+      debugPrint("Exception caught: $e\nStacktrace:\n$stack");
+      rethrow;
+    }
+  }
+
+  /// send cartItems to server
 }
