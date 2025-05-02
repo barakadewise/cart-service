@@ -33,8 +33,14 @@ class CartServiceCopy<T, C extends CartBaseModel<T>> {
   /// Internal list storing cart items
   final List<C> _cartItems = [];
 
+  /// Internal list storing products
+  final List<C> _products = [];
+
   /// Public getter to expose cart items
   List<C> get cartItems => _cartItems;
+
+  /// Public getter to expose products
+  List<C> get products => _products;
 
   /// Adds a new item to the cart.
   /// If an equivalent item exists (based on `isSameItemAs()`), it merges quantities.
@@ -114,6 +120,7 @@ class CartServiceCopy<T, C extends CartBaseModel<T>> {
     required String endPoint,
     required T Function(Map<String, dynamic>) fromJson,
   }) async {
+    Map errorMap = {};
     try {
       var res = await ApplicationBaseRequest.get(
         CartNetworkConfig.baseUrl,
@@ -125,12 +132,15 @@ class CartServiceCopy<T, C extends CartBaseModel<T>> {
 
       if (res.status ~/ 100 == 2 && res.data[CartNetworkConfig.apiSuccessKey]) {
         List<dynamic> data = res.data[dataKey ?? 'products'];
+        debugPrint("Products are: ${res.data}");
         return Right(data.map((e) => fromJson(e)).toList());
       } else {
+        errorMap = res.data;
         return Left(ErrorMap(errorMap: res.data));
       }
     } catch (e, stack) {
-      debugPrint("Exception caught: $e\nStacktrace:\n$stack");
+      debugPrint(
+          "Exception caught: Server response $errorMap\nStacktrace:\n$stack");
       rethrow;
     }
   }
@@ -163,6 +173,4 @@ class CartServiceCopy<T, C extends CartBaseModel<T>> {
       rethrow;
     }
   }
-
-  /// send cartItems to server
 }

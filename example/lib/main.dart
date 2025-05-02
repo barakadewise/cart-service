@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 void main() {
 
   WidgetsFlutterBinding.ensureInitialized();
-  CartNetworkConfig.init('fansika.bluetick.co.tz');
+ 
   runApp(const MyApp());
 }
 
